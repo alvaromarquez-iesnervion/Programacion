@@ -1,4 +1,5 @@
 
+import math
 import random
 import os
 
@@ -109,7 +110,7 @@ def prime_number():
         print("Your number is not prime")
         return
     is_prime = True #inicializo la variable is_prime a True, y si encuentro un divisor, la cambio a False
-    for i in range(2, number): #uso un bucle for para comprobar si el número es divisible por algún número entre 2 y n-1
+    for i in range(2, math.sqrt(number)): #uso un bucle for para comprobar si el número es divisible por algún número entre 2 y n-1
         if number % i == 0:
             is_prime = False
             break
