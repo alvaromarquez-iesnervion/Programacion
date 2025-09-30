@@ -1,4 +1,4 @@
-from tema0 import *
+from Ejercicios.tema0.tema0 import *
 
 def test_numbers_between(): #función para probar numbers_between
     limpiar_consola()
