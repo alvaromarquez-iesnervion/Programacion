@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
+
 app = FastAPI()
+
+
 
 class User(BaseModel):
     id: int
@@ -17,6 +20,7 @@ users_list=[User(id=1, name="John", surname="Doe", age=30),
             User(id=6, name="Eve", surname="Miller", age=27),
             User(id=7, name="Frank", surname="Wilson", age=40),
             User(id=8, name="Grace", surname="Moore", age=32)]
+
 @app.get("/users")
 def users():
     return users_list
@@ -24,5 +28,15 @@ def users():
 @app.get("/users/{id}")
 
 def user(id: int):
+    return search_user(id)
+
+@app.get("/users/")
+def user(id: int):
+    return search_user(id)
+
+def search_user(id: int):
     users = [user for user in users_list if user.id == id]
-    return users[0] if users else {}
+    if not users:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return users[0]
