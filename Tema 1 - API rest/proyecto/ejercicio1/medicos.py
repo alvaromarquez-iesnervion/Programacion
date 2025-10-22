@@ -1,9 +1,8 @@
-from fastapi import FastAPI
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException
 
-"""MÉDICO (Id, Nombre, Apellidos, NColegiado, Especialidad)
-"""
+
 
 app = FastAPI()
 
@@ -50,11 +49,48 @@ def medicos():
 
 @app.get("/medicos/{medico_id}")
 def medico(medico_id: int):
-    medicos= [medico for medico in medicos_list if medico.id == medico_id]
-    return medicos[0] if medicos else {"mensaje": "Médico no encontrado"}
+    return search_medico( medico_id)
+
+@app.get("/medicos/") # Obtener un medico por su ID con query parameter
+def medico(id: int):
+    return search_medico(id)
+
+@app.post("/medicos", status_code=201, response_model=Medico) # Crear un nuevo medico
+def create_medico(medico: Medico):
+    medico.id=next_id()  # Asignar el siguiente ID disponible
+    medicos_list.append(medico) 
+    return medico
+
+@app.put("/medicos/{id}", response_model=Medico) # Actualizar un medico existente
+def update_medico(id: int, medico:Medico):
+    for index, saved_medico in enumerate(medicos_list): # Recorro la lista con índice
+        if saved_medico.id == id: # Si encuentro el medico a actualizar
+            medico.id = id  # Le pongo el ID correcto
+            medicos_list[index] = medico # Actualizo el medico en la lista
+            return medico # Devuelvo el medico actualizado
+    
+    raise HTTPException(status_code=404, detail="Doctor not found") # Si no lo encuentro, lanzo excepción 404    
+
+@app.delete("/medicos/{id}")
+def delete_medico(id:int):
+    for saved_medico in medicos_list:
+        if saved_medico.id ==id:
+            medicos_list.remove(saved_medico)
+            return {}
+    raise HTTPException(status_code=404, detail="Doctor not found")
+
+##funciones auxiliares
+
+def search_medico(id: int):
+    medicos = [medico for medico in medicos_list if medico.id == id] 
+    if not medicos: # Si la lista está vacía
+        raise HTTPException(status_code=404, detail="Doctor not found") # Lanzar excepción 404
+    
+    return medicos[0]
 
 
+def next_id():
+    return max((m.id for m in medicos_list), default=0) + 1
 
-
-
+                                            
     
