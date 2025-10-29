@@ -1,10 +1,11 @@
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 
 
 
-app = FastAPI()
+router = APIRouter(prefix="/medicos"
+                   , tags=["Médicos"])
 
 class Medico(BaseModel):
     id: int
@@ -28,7 +29,7 @@ medicos_list = [
 ]
     
 
-@app.get("/", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def root():
     return """
         <html>
@@ -43,25 +44,25 @@ def root():
     """
 
 
-@app.get("/medicos")
+@router.get("/")
 def medicos():
     return medicos_list if medicos_list else {"mensaje": "No hay médicos disponibles"}
 
-@app.get("/medicos/{medico_id}")
+@router.get("/{medico_id}")
 def medico(medico_id: int):
     return search_medico( medico_id)
 
-@app.get("/medicos/") # Obtener un medico por su ID con query parameter
+@router.get("/query/") # Obtener un medico por su ID con query parameter
 def medico(id: int):
     return search_medico(id)
 
-@app.post("/medicos", status_code=201, response_model=Medico) # Crear un nuevo medico
+@router.post("/", status_code=201, response_model=Medico) # Crear un nuevo medico
 def create_medico(medico: Medico):
     medico.id=next_id()  # Asignar el siguiente ID disponible
     medicos_list.append(medico) 
     return medico
 
-@app.put("/medicos/{id}", response_model=Medico) # Actualizar un medico existente
+@router.put("/{id}", response_model=Medico) # Actualizar un medico existente
 def update_medico(id: int, medico:Medico):
     for index, saved_medico in enumerate(medicos_list): # Recorro la lista con índice
         if saved_medico.id == id: # Si encuentro el medico a actualizar
@@ -71,7 +72,7 @@ def update_medico(id: int, medico:Medico):
     
     raise HTTPException(status_code=404, detail="Doctor not found") # Si no lo encuentro, lanzo excepción 404    
 
-@app.delete("/medicos/{id}")
+@router.delete("/{id}")
 def delete_medico(id:int):
     for saved_medico in medicos_list:
         if saved_medico.id ==id:

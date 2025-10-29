@@ -1,11 +1,12 @@
 from datetime import date
 from pydantic import BaseModel
 from fastapi.responses import HTMLResponse
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, HTTPException
 
 
 
-app = FastAPI()
+router = APIRouter(prefix="/pacientes"
+                   , tags=["Pacientes"])
 
 
 class Paciente(BaseModel):
@@ -32,25 +33,25 @@ pacientes_list = [
 ]
 
 
-@app.get("/pacientes")
+@router.get("/")
 def pacientes():
     return pacientes_list if pacientes_list else {"mensaje": "No hay pacientes disponibles"}
 
-@app.get("/pacientes/{id}")
+@router.get("/{id}")
 def paciente(id:int):
     return search_paciente(id)
 
-@app.get("/pacientes/") # Obtener un paciente por su ID con query parameter
+@router.get("/query/") # Obtener un paciente por su ID con query parameter
 def paciente(id: int):
     return search_paciente(id)
 
-@app.post("/pacientes", status_code=201, response_model=Paciente) # Crear un nuevo paciente
+@router.post("/", status_code=201, response_model=Paciente) # Crear un nuevo paciente
 def create_paciente(paciente: Paciente):
     paciente.id=next_id()  # Asignar el siguiente ID disponible
     pacientes_list.append(paciente) 
     return paciente
 
-@app.put("/pacientes/{id}", response_model=Paciente) # Actualizar un paciente existente
+@router.put("/{id}", response_model=Paciente) # Actualizar un paciente existente
 def update_paciente(id: int, paciente:Paciente):
     for index, saved_paciente in enumerate(pacientes_list): # Recorro la lista con índice
         if saved_paciente.id == id: # Si encuentro el paciente a actualizar
@@ -60,7 +61,7 @@ def update_paciente(id: int, paciente:Paciente):
     
     raise HTTPException(status_code=404, detail="Patient not found") # Si no lo encuentro, lanzo excepción 404    
 
-@app.delete("/pacientes/{id}")
+@router.delete("/{id}")
 def delete_paciente(id:int):
     for saved_paciente in pacientes_list:
         if saved_paciente.id ==id:
