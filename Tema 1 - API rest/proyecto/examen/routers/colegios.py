@@ -45,7 +45,7 @@ def delete_colegio(id:int):
                 if alumno in alumnos:
                     alumnos_list.remove(alumno)           
         
-            colegios_list.remove(colegio)
+            colegios_list.remove(saved_colegio)
             return{}
         
         raise HTTPException(status_code=404, detail="Colegio not found") 
